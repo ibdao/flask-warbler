@@ -12,6 +12,7 @@ load_dotenv()
 
 CURR_USER_KEY = "curr_user"
 
+
 app = Flask(__name__)
 
 # Get DB_URI from environ variable (useful for production/testing) or,
@@ -20,7 +21,7 @@ app.config['SQLALCHEMY_DATABASE_URI'] = (
     os.environ['DATABASE_URL'].replace("postgres://", "postgresql://"))
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['SQLALCHEMY_ECHO'] = False
-app.config['DEBUG_TB_INTERCEPT_REDIRECTS'] = False
+app.config['DEBUG_TB_INTERCEPT_REDIRECTS'] = True
 app.config['SECRET_KEY'] = os.environ['SECRET_KEY']
 toolbar = DebugToolbarExtension(app)
 
@@ -38,7 +39,7 @@ def add_user_to_g():
 
     if CURR_USER_KEY in session:
         g.user = User.query.get(session[CURR_USER_KEY])
-
+        g.csrf_form = CSRFProtectForm()
     else:
         g.user = None
 
@@ -77,8 +78,6 @@ def signup():
             user = User.signup(
                 username=form.username.data,
                 password=form.password.data,
-                bio = form.bio.data,
-                location = form.location.data,
                 email=form.email.data,
                 image_url=form.image_url.data or User.image_url.default.arg,
             )
@@ -120,13 +119,14 @@ def login():
 @app.post('/logout')
 def logout():
     """Handle logout of user and redirect to homepage."""
-
-    form = CSRFProtectForm()
+    
+    form = g.csrf_form
 
     if form.validate_on_submit():
+        do_logout()
         flash("Log out successful")
-        session.pop(CURR_USER_KEY, None)
-
+        
+    
     return redirect("/login")
     # DO NOT CHANGE METHOD ON ROUTE
 
