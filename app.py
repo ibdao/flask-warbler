@@ -1,3 +1,4 @@
+from email import message
 import os
 from dotenv import load_dotenv
 
@@ -119,14 +120,14 @@ def login():
 @app.post('/logout')
 def logout():
     """Handle logout of user and redirect to homepage."""
-    
+
     form = g.csrf_form
 
     if form.validate_on_submit():
         do_logout()
         flash("Log out successful")
-        
-    
+
+
     return redirect("/login")
     # DO NOT CHANGE METHOD ON ROUTE
 
@@ -246,7 +247,7 @@ def profile():
         g.user.image_url = form.image_url.data
         g.user.header_image_url = form.header_image_url.data
 
-        
+
         if g.user.password == form.password.data:
             db.session.commit()
             return redirect(f"/users/{g.user.id}")
@@ -344,8 +345,10 @@ def homepage():
     """
 
     if g.user:
+        followed_ids=[user.id for user in g.user.following ]
         messages = (Message
                     .query
+                    .filter(Message.user_id.in_(followed_ids))
                     .order_by(Message.timestamp.desc())
                     .limit(100)
                     .all())
