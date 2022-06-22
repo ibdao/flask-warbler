@@ -77,6 +77,8 @@ def signup():
             user = User.signup(
                 username=form.username.data,
                 password=form.password.data,
+                bio = form.bio.data,
+                location = form.location.data,
                 email=form.email.data,
                 image_url=form.image_url.data or User.image_url.default.arg,
             )
@@ -124,7 +126,7 @@ def logout():
     if form.validate_on_submit():
         flash("Log out successful")
         session.pop(CURR_USER_KEY, None)
-    
+
     return redirect("/login")
     # DO NOT CHANGE METHOD ON ROUTE
 
@@ -226,8 +228,8 @@ def stop_following(follow_id):
     return redirect(f"/users/{g.user.id}/following")
 
 
-@app.route('/users/<int:user_id>/profile', methods=["GET", "POST"])
-def profile(user_id):
+@app.route('/users/profile', methods=["GET", "POST"])
+def profile():
     """Update profile for current user."""
 
     # IMPLEMENT THIS
@@ -235,19 +237,21 @@ def profile(user_id):
         flash("Access unauthorized.", "danger")
         return redirect("/")
 
-    user = User.query.get_or_404(user_id)
-    form = UserEditForm(obj=user)
+
+    form = UserEditForm(obj=g.user)
 
     if form.validate_on_submit():
-        user.username = form.username.data
-        user.email = form.email.data
-        user.password = form.password.data
-        user.image_url = form.image_url.data
+        g.user.username = form.username.data
+        g.user.email = form.email.data
+        g.user.bio = form.bio.data
+        g.user.location = form.location.data
+        g.user.password = form.password.data
+        g.user.image_url = form.image_url.data
+        g.user.header_image_url = form.header_image_url.data
 
-        if user:
-            session[CURR_USER_KEY] = user.id
-            return redirect(f"/users/{user.id}")
-    
+        db.session.commit()
+        return redirect(f"/users/{g.user.id}")
+
     return render_template("users/edit.html", form=form)
 
 @app.post('/users/delete')
