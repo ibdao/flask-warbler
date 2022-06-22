@@ -247,8 +247,10 @@ def profile():
         g.user.image_url = form.image_url.data
         g.user.header_image_url = form.header_image_url.data
 
+      #TODO hash form.password.data
 
-        if g.user.password == form.password.data:
+        if User.authenticate(g.user.username,form.password.data):
+
             db.session.commit()
             return redirect(f"/users/{g.user.id}")
         else:
@@ -343,9 +345,9 @@ def homepage():
     - anon users: no messages
     - logged in: 100 most recent messages of followed_users
     """
-
+    #todo show users own tweets
     if g.user:
-        followed_ids=[user.id for user in g.user.following ]
+        followed_ids=[user.id for user in g.user.following ] + [g.user.id]
         messages = (Message
                     .query
                     .filter(Message.user_id.in_(followed_ids))
