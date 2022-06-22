@@ -20,6 +20,19 @@ body.error-404 {
   cursor: pointer;
 }
 
+.btn-link {
+  border: none;
+  outline: none;
+  background: none;
+  cursor: pointer;
+  padding: 0;
+  text-decoration: underline;
+  font-family: inherit;
+  color: #66757f;
+  font-size: 13px;
+  font-weight: bold;
+}
+
 /* ======================= Nav */
 
 .navbar {

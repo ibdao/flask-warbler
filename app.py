@@ -5,7 +5,7 @@ from flask import Flask, render_template, request, flash, redirect, session, g
 from flask_debugtoolbar import DebugToolbarExtension
 from sqlalchemy.exc import IntegrityError
 
-from forms import UserAddForm, LoginForm, MessageForm
+from forms import UserAddForm, LoginForm, MessageForm, CSRFProtectForm, UserEditForm
 from models import db, connect_db, User, Message
 
 load_dotenv()
@@ -20,7 +20,7 @@ app.config['SQLALCHEMY_DATABASE_URI'] = (
     os.environ['DATABASE_URL'].replace("postgres://", "postgresql://"))
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['SQLALCHEMY_ECHO'] = False
-app.config['DEBUG_TB_INTERCEPT_REDIRECTS'] = True
+app.config['DEBUG_TB_INTERCEPT_REDIRECTS'] = False
 app.config['SECRET_KEY'] = os.environ['SECRET_KEY']
 toolbar = DebugToolbarExtension(app)
 
@@ -119,9 +119,13 @@ def login():
 def logout():
     """Handle logout of user and redirect to homepage."""
 
-    form = g.csrf_form
+    form = CSRFProtectForm()
 
-    # IMPLEMENT THIS AND FIX BUG
+    if form.validate_on_submit():
+        flash("Log out successful")
+        session.pop(CURR_USER_KEY, None)
+    
+    return redirect("/login")
     # DO NOT CHANGE METHOD ON ROUTE
 
 
@@ -222,12 +226,29 @@ def stop_following(follow_id):
     return redirect(f"/users/{g.user.id}/following")
 
 
-@app.route('/users/profile', methods=["GET", "POST"])
-def profile():
+@app.route('/users/<int:user_id>/profile', methods=["GET", "POST"])
+def profile(user_id):
     """Update profile for current user."""
 
     # IMPLEMENT THIS
+    if not g.user:
+        flash("Access unauthorized.", "danger")
+        return redirect("/")
 
+    user = User.query.get_or_404(user_id)
+    form = UserEditForm(obj=user)
+
+    if form.validate_on_submit():
+        user.username = form.username.data
+        user.email = form.email.data
+        user.password = form.password.data
+        user.image_url = form.image_url.data
+
+        if user:
+            session[CURR_USER_KEY] = user.id
+            return redirect(f"/users/{user.id}")
+    
+    return render_template("users/edit.html", form=form)
 
 @app.post('/users/delete')
 def delete_user():
