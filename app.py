@@ -232,11 +232,9 @@ def stop_following(follow_id):
 def profile():
     """Update profile for current user."""
 
-    # IMPLEMENT THIS
     if not g.user:
         flash("Access unauthorized.", "danger")
         return redirect("/")
-
 
     form = UserEditForm(obj=g.user)
 
@@ -245,12 +243,15 @@ def profile():
         g.user.email = form.email.data
         g.user.bio = form.bio.data
         g.user.location = form.location.data
-        g.user.password = form.password.data
         g.user.image_url = form.image_url.data
         g.user.header_image_url = form.header_image_url.data
 
-        db.session.commit()
-        return redirect(f"/users/{g.user.id}")
+        
+        if g.user.password == form.password.data:
+            db.session.commit()
+            return redirect(f"/users/{g.user.id}")
+        else:
+            form.password.errors = ["Incorrect Password"]
 
     return render_template("users/edit.html", form=form)
 
