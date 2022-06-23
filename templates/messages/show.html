@@ -39,6 +39,19 @@
               </button>
             </form>
             {% endif %}
+            {% if g.user.is_liked(message.id) %}
+            <form method="POST"
+                  action="/messages/unlike/{{ message.id }}">
+              <button class="btn btn-primary">Unlike</button>
+            </form>
+            {% else %}
+            <form method="POST"
+                  action="/messages/like/{{ message.id }}">
+              <button class="btn btn-outline-primary btn-sm">
+                Like
+              </button>
+            </form>
+            {% endif %}
             {% endif %}
           </div>
           <p class="single-message">{{ message.text }}</p>

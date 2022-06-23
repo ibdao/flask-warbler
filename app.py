@@ -30,6 +30,7 @@ toolbar = DebugToolbarExtension(app)
 connect_db(app)
 
 
+
 ##############################################################################
 # User signup/login/logout
 
@@ -331,7 +332,7 @@ def delete_message(message_id):
 
     return redirect(f"/users/{g.user.id}")
 
-@app.post('/messages/like/<int:message_id>/')
+@app.post('/messages/like/<int:message_id>')
 def liking(message_id):
 
     if not g.user:
@@ -339,8 +340,23 @@ def liking(message_id):
         return redirect("/")
 
     liked_message = Message.query.get_or_404(message_id)
-    g.user.message.likes.append(liked_message)
+    g.user.liked_messages.append(liked_message)
     db.session.commit()
+
+
+    return redirect('/')
+
+@app.post('/messages/unlike/<int:message_id>')
+def unliking(message_id):
+
+    if not g.user:
+        flash("Access unauthorized.", "danger")
+        return redirect("/")
+
+    liked_message = Message.query.get_or_404(message_id)
+    g.user.liked_messages.remove(liked_message)
+    db.session.commit()
+
 
     return redirect('/')
 

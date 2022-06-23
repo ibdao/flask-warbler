@@ -76,14 +76,17 @@ class User(db.Model):
         nullable=False,
     )
 
-    liked_messages = db.relationship('Message',
-                            secondary='likes',
-                            backref="user")
 
+    # Through the likes table to get messages liked
+    liked_messages = db.relationship(
+        'Message',
+        secondary='likes',
+        backref="users")
+
+
+    # Own users messages
     messages = db.relationship('Message', backref="user")
-    #liked
-
-
+   
 
     followers = db.relationship(
         "User",
@@ -150,11 +153,11 @@ class User(db.Model):
             user for user in self.following if user == other_user]
         return len(found_user_list) == 1
 
-    def message_liked(self):
+    def is_liked(self, liked_message_id):
         """list of message instances liked by user"""
-        liked_messages = [
-            message.id for message in self.message.likes]
-        return liked_messages
+        message_liked = [
+            message for message in self.liked_messages if message.id == liked_message_id]
+        return len(message_liked) == 1
 
 
 
@@ -186,14 +189,13 @@ class Message(db.Model):
         nullable=False,
     )
 
-
-
     def liked_by(self):
         """returns list of user_ids that has liked message instance"""
 
         users_that_liked = [
             user.id for user in self.likes]
         return users_that_liked
+
 
 class Like (db.Model):
     """Like----- Join table from users<--->messages"""
@@ -209,11 +211,6 @@ class Like (db.Model):
         db.Integer,
         db.ForeignKey('users.id', ondelete="cascade"),
         primary_key=True)
-
-
-
-
-
 
 
 
