@@ -4,6 +4,7 @@ from datetime import datetime
 
 from flask_bcrypt import Bcrypt
 from flask_sqlalchemy import SQLAlchemy
+from sqlalchemy import ForeignKey
 
 bcrypt = Bcrypt()
 db = SQLAlchemy()
@@ -75,7 +76,14 @@ class User(db.Model):
         nullable=False,
     )
 
+    liked_messages = db.relationship('Message',
+                            secondary='likes',
+                            backref="user")
+
     messages = db.relationship('Message', backref="user")
+    #liked
+
+
 
     followers = db.relationship(
         "User",
@@ -142,6 +150,14 @@ class User(db.Model):
             user for user in self.following if user == other_user]
         return len(found_user_list) == 1
 
+    def message_liked(self):
+        """list of message instances liked by user"""
+        liked_messages = [
+            message.id for message in self.message.likes]
+        return liked_messages
+
+
+
 
 class Message(db.Model):
     """An individual message ("warble")."""
@@ -170,19 +186,35 @@ class Message(db.Model):
         nullable=False,
     )
 
-    likes = db.relationship("Like", backref="messages")
 
+
+    def liked_by(self):
+        """returns list of user_ids that has liked message instance"""
+
+        users_that_liked = [
+            user.id for user in self.likes]
+        return users_that_liked
 
 class Like (db.Model):
-    """Like"""
+    """Like----- Join table from users<--->messages"""
 
     __tablename__ = 'likes'
 
     message_being_like_id = db.Column(
        db.Integer,
-       db.ForeignKey('message.id', ondelete="cascade"),
-       primary_key=True,
-)
+       db.ForeignKey('messages.id', ondelete="cascade"),
+       primary_key=True)
+
+    user_id_liking_message = db.Column(
+        db.Integer,
+        db.ForeignKey('users.id', ondelete="cascade"),
+        primary_key=True)
+
+
+
+
+
+
 
 
 def connect_db(app):

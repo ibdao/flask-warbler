@@ -331,7 +331,18 @@ def delete_message(message_id):
 
     return redirect(f"/users/{g.user.id}")
 
+@app.post('/messages/like/<int:message_id>/')
+def liking(message_id):
 
+    if not g.user:
+        flash("Access unauthorized.", "danger")
+        return redirect("/")
+
+    liked_message = Message.query.get_or_404(message_id)
+    g.user.message.likes.append(liked_message)
+    db.session.commit()
+
+    return redirect('/')
 
 
 ##############################################################################
@@ -362,7 +373,7 @@ def homepage():
                         .order_by(Message.timestamp.desc())
                         .limit(100)
                         .all())
-        
+
         return render_template('home.html', messages=messages)
 
     else:
