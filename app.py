@@ -22,7 +22,7 @@ app.config['SQLALCHEMY_DATABASE_URI'] = (
     os.environ['DATABASE_URL'].replace("postgres://", "postgresql://"))
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['SQLALCHEMY_ECHO'] = False
-app.config['DEBUG_TB_INTERCEPT_REDIRECTS'] = True
+app.config['DEBUG_TB_INTERCEPT_REDIRECTS'] = False
 app.config['SECRET_KEY'] = os.environ['SECRET_KEY']
 toolbar = DebugToolbarExtension(app)
 
@@ -247,10 +247,8 @@ def profile():
         g.user.image_url = form.image_url.data
         g.user.header_image_url = form.header_image_url.data
 
-      #TODO hash form.password.data
 
-        if User.authenticate(g.user.username,form.password.data):
-
+        if User.authenticate(g.user.username, form.password.data):
             db.session.commit()
             return redirect(f"/users/{g.user.id}")
         else:
@@ -334,6 +332,8 @@ def delete_message(message_id):
     return redirect(f"/users/{g.user.id}")
 
 
+
+
 ##############################################################################
 # Homepage and error pages
 
@@ -345,16 +345,24 @@ def homepage():
     - anon users: no messages
     - logged in: 100 most recent messages of followed_users
     """
-    #todo show users own tweets
-    if g.user:
-        followed_ids=[user.id for user in g.user.following ] + [g.user.id]
-        messages = (Message
-                    .query
-                    .filter(Message.user_id.in_(followed_ids))
-                    .order_by(Message.timestamp.desc())
-                    .limit(100)
-                    .all())
 
+    if g.user:
+        followed_ids = [user.id for user in g.user.following ] + [g.user.id]
+
+        if len(followed_ids) > 1:
+            messages = (Message
+                        .query
+                        .filter(Message.user_id.in_(followed_ids))
+                        .order_by(Message.timestamp.desc())
+                        .limit(100)
+                        .all())
+        else:
+            messages = (Message
+                        .query
+                        .order_by(Message.timestamp.desc())
+                        .limit(100)
+                        .all())
+        
         return render_template('home.html', messages=messages)
 
     else:

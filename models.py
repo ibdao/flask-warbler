@@ -170,6 +170,20 @@ class Message(db.Model):
         nullable=False,
     )
 
+    likes = db.relationship("Like", backref="messages")
+
+
+class Like (db.Model):
+    """Like"""
+
+    __tablename__ = 'likes'
+
+    message_being_like_id = db.Column(
+       db.Integer,
+       db.ForeignKey('message.id', ondelete="cascade"),
+       primary_key=True,
+)
+
 
 def connect_db(app):
     """Connect this database to provided Flask app.
