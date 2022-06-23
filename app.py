@@ -30,7 +30,6 @@ toolbar = DebugToolbarExtension(app)
 connect_db(app)
 
 
-
 ##############################################################################
 # User signup/login/logout
 
@@ -128,7 +127,6 @@ def logout():
         do_logout()
         flash("Log out successful")
 
-
     return redirect("/login")
     # DO NOT CHANGE METHOD ON ROUTE
 
@@ -180,6 +178,18 @@ def show_following(user_id):
 
     user = User.query.get_or_404(user_id)
     return render_template('users/following.html', user=user)
+
+
+@app.get("/users/<int:user_id>/liked_messages")
+def show_liked_messages(user_id):
+    """Show list of liked messages for user profile  ."""
+
+    if not g.user:
+        flash("Access unauthorized.", "danger")
+        return redirect("/")
+
+    user = User.query.get_or_404(user_id)
+    return render_template('users/show-likes.html', user=user)
 
 
 @app.get('/users/<int:user_id>/followers')
@@ -248,7 +258,6 @@ def profile():
         g.user.image_url = form.image_url.data
         g.user.header_image_url = form.header_image_url.data
 
-
         if User.authenticate(g.user.username, form.password.data):
             db.session.commit()
             return redirect(f"/users/{g.user.id}")
@@ -256,6 +265,7 @@ def profile():
             form.password.errors = ["Incorrect Password"]
 
     return render_template("users/edit.html", form=form)
+
 
 @app.post('/users/delete')
 def delete_user():
@@ -332,8 +342,11 @@ def delete_message(message_id):
 
     return redirect(f"/users/{g.user.id}")
 
+
 @app.post('/messages/like/<int:message_id>')
 def liking(message_id):
+    """Add a like to the message for the currently logged in user
+        redirects to the home page"""
 
     if not g.user:
         flash("Access unauthorized.", "danger")
@@ -343,11 +356,13 @@ def liking(message_id):
     g.user.liked_messages.append(liked_message)
     db.session.commit()
 
-
     return redirect('/')
+
 
 @app.post('/messages/unlike/<int:message_id>')
 def unliking(message_id):
+    """remove like from a message from the currently logged in user
+        redirects to the home page"""
 
     if not g.user:
         flash("Access unauthorized.", "danger")
@@ -356,7 +371,6 @@ def unliking(message_id):
     liked_message = Message.query.get_or_404(message_id)
     g.user.liked_messages.remove(liked_message)
     db.session.commit()
-
 
     return redirect('/')
 
@@ -374,7 +388,7 @@ def homepage():
     """
 
     if g.user:
-        followed_ids = [user.id for user in g.user.following ] + [g.user.id]
+        followed_ids = [user.id for user in g.user.following] + [g.user.id]
 
         if len(followed_ids) > 1:
             messages = (Message

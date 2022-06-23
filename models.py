@@ -77,16 +77,16 @@ class User(db.Model):
     )
 
 
-    # Through the likes table to get messages liked
+    # Relation to represent messages liked by user
     liked_messages = db.relationship(
         'Message',
         secondary='likes',
         backref="users")
 
 
-    # Own users messages
+    # messages written by user
     messages = db.relationship('Message', backref="user")
-   
+
 
     followers = db.relationship(
         "User",
@@ -154,7 +154,7 @@ class User(db.Model):
         return len(found_user_list) == 1
 
     def is_liked(self, liked_message_id):
-        """list of message instances liked by user"""
+        """checks if message is inside user liked message list"""
         message_liked = [
             message for message in self.liked_messages if message.id == liked_message_id]
         return len(message_liked) == 1
@@ -189,16 +189,11 @@ class Message(db.Model):
         nullable=False,
     )
 
-    def liked_by(self):
-        """returns list of user_ids that has liked message instance"""
 
-        users_that_liked = [
-            user.id for user in self.likes]
-        return users_that_liked
 
 
 class Like (db.Model):
-    """Like----- Join table from users<--->messages"""
+    """Connection of a user <-> messages """
 
     __tablename__ = 'likes'
 
