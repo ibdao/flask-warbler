@@ -189,7 +189,7 @@ def show_liked_messages(user_id):
         return redirect("/")
 
     user = User.query.get_or_404(user_id)
-    return render_template('users/show-likes.html', user=user)
+    return render_template('users/show_likes.html', user=user)
 
 
 @app.get('/users/<int:user_id>/followers')
@@ -356,8 +356,7 @@ def liking(message_id):
     g.user.liked_messages.append(liked_message)
     db.session.commit()
 
-    return redirect('/')
-
+    return redirect("/")
 
 @app.post('/messages/unlike/<int:message_id>')
 def unliking(message_id):
@@ -372,8 +371,7 @@ def unliking(message_id):
     g.user.liked_messages.remove(liked_message)
     db.session.commit()
 
-    return redirect('/')
-
+    return redirect("/")
 
 ##############################################################################
 # Homepage and error pages
