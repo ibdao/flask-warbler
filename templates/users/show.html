@@ -9,16 +9,14 @@
       <a href="/messages/{{ message.id }}" class="message-link"></a>
 
       <a href="/users/{{ user.id }}">
-        <img src="{{ user.image_url }}"
-             alt="user image"
-             class="timeline-image">
+        <img src="{{ user.image_url }}" alt="user image" class="timeline-image">
       </a>
 
       <div class="message-area">
         <a href="/users/{{ user.id }}">@{{ user.username }}</a>
         <span class="text-muted">
-              {{ message.timestamp.strftime('%d %B %Y') }}
-            </span>
+          {{ message.timestamp.strftime('%d %B %Y') }}
+        </span>
         <p>{{ message.text }}</p>
         <a>
           {% if g.user.is_liked(message.id) %}
@@ -34,7 +32,7 @@
           {% endif %}
         </a>
       </div>
-      
+
     </li>
 
     {% endfor %}

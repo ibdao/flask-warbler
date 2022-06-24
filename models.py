@@ -76,17 +76,14 @@ class User(db.Model):
         nullable=False,
     )
 
-
     # Relation to represent messages liked by user
     liked_messages = db.relationship(
         'Message',
         secondary='likes',
         backref="users")
 
-
     # messages written by user
     messages = db.relationship('Message', backref="user")
-
 
     followers = db.relationship(
         "User",
@@ -160,8 +157,6 @@ class User(db.Model):
         return len(message_liked) == 1
 
 
-
-
 class Message(db.Model):
     """An individual message ("warble")."""
 
@@ -190,23 +185,20 @@ class Message(db.Model):
     )
 
 
-
-
 class Like (db.Model):
     """Connection of a user <-> messages """
 
     __tablename__ = 'likes'
 
     message_being_like_id = db.Column(
-       db.Integer,
-       db.ForeignKey('messages.id', ondelete="cascade"),
-       primary_key=True)
+        db.Integer,
+        db.ForeignKey('messages.id', ondelete="cascade"),
+        primary_key=True)
 
     user_id_liking_message = db.Column(
         db.Integer,
         db.ForeignKey('users.id', ondelete="cascade"),
         primary_key=True)
-
 
 
 def connect_db(app):

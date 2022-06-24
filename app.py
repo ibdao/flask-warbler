@@ -358,6 +358,7 @@ def liking(message_id):
 
     return redirect("/")
 
+
 @app.post('/messages/unlike/<int:message_id>')
 def unliking(message_id):
     """remove like from a message from the currently logged in user
