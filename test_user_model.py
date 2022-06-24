@@ -5,8 +5,11 @@
 #    python -m unittest test_user_model.py
 
 
+from enum import unique
 import os
 from unittest import TestCase
+from sqlalchemy import exc
+
 
 from models import db, User, Message, Follows
 
@@ -50,3 +53,36 @@ class UserModelTestCase(TestCase):
         # User should have no messages & no followers
         self.assertEqual(len(u1.messages), 0)
         self.assertEqual(len(u1.followers), 0)
+
+    def test_repr(self):
+        u1 = User.query.get(self.u1_id)
+        self.assertEqual(repr(u1),f"<User #{u1.id}: {u1.username}, {u1.email}>")
+
+    def test_is_following(self):
+        u1 = User.query.get(self.u1_id)
+        u2 = User.query.get(self.u2_id)
+        u1.following.append(u2)
+        db.session.commit()
+
+        self.assertTrue(u1.is_following(u2))
+        self.assertFalse(u2.is_following(u1))
+        self.assertTrue(u2.is_followed_by(u1))
+        self.assertFalse(u1.is_followed_by(u2))
+
+    def test_user_sign_up(self):
+        u3 = User.signup("u3", "u3@email.com", "password", None)
+
+        db.session.commit()
+        self.u3_id=u3.id
+        users = User.query.all()
+        self.assertIn(u3,users)
+        def duplicate_user():
+            User.signup(
+            "u3",
+            "u3@email.com",
+            "password",
+            None)
+            db.session.commit()
+
+        self.assertRaises(
+            exc.IntegrityError,duplicate_user)
