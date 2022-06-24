@@ -55,10 +55,13 @@ class UserModelTestCase(TestCase):
         self.assertEqual(len(u1.followers), 0)
 
     def test_repr(self):
+        """Checks the dunder repr is accurate"""
         u1 = User.query.get(self.u1_id)
         self.assertEqual(repr(u1),f"<User #{u1.id}: {u1.username}, {u1.email}>")
 
     def test_is_following(self):
+        """Tests for following another user and followed by another user"""
+
         u1 = User.query.get(self.u1_id)
         u2 = User.query.get(self.u2_id)
         u1.following.append(u2)
@@ -66,23 +69,33 @@ class UserModelTestCase(TestCase):
 
         self.assertTrue(u1.is_following(u2))
         self.assertFalse(u2.is_following(u1))
+
         self.assertTrue(u2.is_followed_by(u1))
         self.assertFalse(u1.is_followed_by(u2))
 
     def test_user_sign_up(self):
+        """Tests for signing up a user with valid credentials
+        Expect an IntegrityError when trying to sign up with duplicated credentials """
+       
         u3 = User.signup("u3", "u3@email.com", "password", None)
 
         db.session.commit()
-        self.u3_id=u3.id
-        users = User.query.all()
-        self.assertIn(u3,users)
-        def duplicate_user():
-            User.signup(
-            "u3",
-            "u3@email.com",
-            "password",
-            None)
-            db.session.commit()
+        self.u3_id = u3.id
 
-        self.assertRaises(
-            exc.IntegrityError,duplicate_user)
+
+        def duplicate_user():
+            """Creates a duplicate user and updates the database"""
+
+            User.signup("u3", "u3@email.com", "password", None)
+            db.session.commit()
+        
+        users = User.query.all()
+        self.assertIn(u3, users)
+        self.assertRaises(exc.IntegrityError, duplicate_user)
+    
+    def test_user_authenticate(self):
+        u1 = User.query.get(self.u1_id)
+        
+        self.assertTrue(User.authenticate(u1.username, "password"))
+        self.assertFalse(User.authenticate("u4", "password"))
+        self.assertFalse(User.authenticate(u1.username, "drowssap"))

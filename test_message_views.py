@@ -66,3 +66,41 @@ class MessageAddViewTestCase(MessageBaseViewTestCase):
             self.assertEqual(resp.status_code, 302)
 
             Message.query.filter_by(text="Hello").one()
+    
+    def test_show_following(self):
+        with self.client as c:
+            with c.session_transaction() as sess:
+                sess[CURR_USER_KEY] = self.u1_id
+
+            resp = c.get(f'/users/{self.u1_id}/following')
+            self.assertEqual(resp.status_code, 200)
+
+            html = resp.get_data(as_text=True)
+            self.assertIn("<!--following-->", html)
+
+            bad_resp = c.get('/users/0/following')
+            self.assertEqual(bad_resp.status_code, 404)
+
+    def test_show_followers(self):
+        with self.client as c:
+            with c.session_transaction() as sess:
+                sess[CURR_USER_KEY] = self.u1_id
+
+            resp = c.get(f'/users/{self.u1_id}/followers')
+            self.assertEqual(resp.status_code, 200)
+
+            bad_resp = c.get('/users/0/followers')
+            self.assertEqual(bad_resp.status_code, 404)
+
+            html = resp.get_data(as_text=True)
+            self.assertIn("<!--followers-->", html)
+    
+    def test_not_logged_in_user(self):
+        with self.client as c:
+            with c.session_transaction() as sess:
+                sess[CURR_USER_KEY] = self.u1_id
+        
+        u1 = User.query.get(self.u1_id)
+        resp = c.post("/logout", data={"user": f"{u1}"}, follow_redirects=True)
+        self.assertEqual(resp.status_code, 200)
+        self.assertFalse(sess[CURR_USER_KEY])
