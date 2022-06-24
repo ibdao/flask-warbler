@@ -80,7 +80,7 @@ class User(db.Model):
     liked_messages = db.relationship(
         'Message',
         secondary='likes',
-        backref="users")
+        backref="users") #TODO: More distinct name for backref "users_who_liked"
 
     # messages written by user
     messages = db.relationship('Message', backref="user")

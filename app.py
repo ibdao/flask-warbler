@@ -309,7 +309,7 @@ def add_message():
 
         return redirect(f"/users/{g.user.id}")
 
-    return render_template('messages/new.html', form=form)
+    return render_template('messages/create.html', form=form)
 
 
 @app.get('/messages/<int:message_id>')
@@ -347,14 +347,23 @@ def delete_message(message_id):
 def liking(message_id):
     """Add a like to the message for the currently logged in user
         redirects to the home page"""
+    
+    if message_id == g.user.message.id:
+        flash("You cannot like your own message", "danger")
+        return redirect ("/")
 
     if not g.user:
         flash("Access unauthorized.", "danger")
         return redirect("/")
+    
+    form = g.csrf_form
+    
+    if form.validate_on_submit():
 
-    liked_message = Message.query.get_or_404(message_id)
-    g.user.liked_messages.append(liked_message)
-    db.session.commit()
+        liked_message = Message.query.get_or_404(message_id)
+        g.user.liked_messages.append(liked_message)
+        db.session.commit()
+        flash ("Message Liked!", "success")
 
     return redirect("/")
 
@@ -367,10 +376,15 @@ def unliking(message_id):
     if not g.user:
         flash("Access unauthorized.", "danger")
         return redirect("/")
+    
+    form = g.csrf_form
 
-    liked_message = Message.query.get_or_404(message_id)
-    g.user.liked_messages.remove(liked_message)
-    db.session.commit()
+    if form.validate_on_submit():
+
+        liked_message = Message.query.get_or_404(message_id)
+        g.user.liked_messages.remove(liked_message)
+        db.session.commit()
+        flash ("Message Unliked!", "success")
 
     return redirect("/")
 
