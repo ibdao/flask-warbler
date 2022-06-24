@@ -125,7 +125,7 @@ def logout():
 
     if form.validate_on_submit():
         do_logout()
-        flash("Log out successful")
+        flash("Log out successful", "success")
 
     return redirect("/login")
     # DO NOT CHANGE METHOD ON ROUTE
@@ -278,7 +278,13 @@ def delete_user():
         flash("Access unauthorized.", "danger")
         return redirect("/")
 
+
+    for message in g.user.messages:
+        db.session.delete(message)
+
+    db.session.commit()
     do_logout()
+
 
     db.session.delete(g.user)
     db.session.commit()
@@ -348,7 +354,11 @@ def liking(message_id):
     """Add a like to the message for the currently logged in user
         redirects to the home page"""
     
-    if message_id == g.user.message.id:
+    #TODO: Redirect to the same page the user was on. 
+    # Likable places include the home page, user profile pages and message show page
+    user_messages_ids = [message.id for message in g.user.messages]
+
+    if message_id in user_messages_ids:
         flash("You cannot like your own message", "danger")
         return redirect ("/")
 
@@ -372,6 +382,9 @@ def liking(message_id):
 def unliking(message_id):
     """remove like from a message from the currently logged in user
         redirects to the home page"""
+    
+    #TODO: Redirect to the same page the user was on. 
+    # Unlikable places include the home page, user profile pages and message show page
 
     if not g.user:
         flash("Access unauthorized.", "danger")

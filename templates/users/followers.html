@@ -4,6 +4,7 @@
 <div class="col-sm-9">
   <div class="row">
     <!--followers-->
+    {% if user.followers %}
     {% for follower in user.followers %}
 
     <div class="col-lg-4 col-md-6 col-12">
@@ -37,6 +38,9 @@
     </div>
 
     {% endfor %}
+    {% else %}
+    <p> {{ user.username }} has no followers! </p>
+    {% endif %}
 
   </div>
 </div>

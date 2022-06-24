@@ -2,7 +2,7 @@
 {% block user_details %}
 <div class="col-sm-6">
   <ul class="list-group" id="messages">
-
+    {% if user.messages %}
     {% for message in user.messages %}
 
     <li class="list-group-item">
@@ -40,6 +40,9 @@
     </li>
 
     {% endfor %}
+    {% else %}
+    <p> {{ user.username }} has no messages! </p>
+    {% endif %}
 
   </ul>
 </div>
